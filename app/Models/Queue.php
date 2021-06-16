@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 
 class Queue extends Model
@@ -17,7 +18,8 @@ class Queue extends Model
         'priority'
     ];
 
-    public function aircraft(){
+    public function aircraft()
+    {
         return $this->belongsTo('\App\Models\Aircraft', 'ac_id');
     }
 }

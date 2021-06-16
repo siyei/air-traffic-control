@@ -1,4 +1,4 @@
-const btnToggle = document.querySelector('.btn-boot'), 
+const btnToggle = document.querySelector('.btn-boot'),
 	btnQueue 	= document.querySelector('.btn-queue'),
     stIndicator = document.querySelector('.current-status'),
     tableData   = document.querySelector('table.data tbody');
@@ -9,16 +9,17 @@ fetch('./api/system/status', {
         'Content-Type'     : 'application/json',
         "X-Requested-With" : "XMLHttpRequest"
     }
-}).then(res => res.json())
-.catch(error => {})
-.then((response) => {
-    if( response.success ) {
-        btnToggle.disabled      = false;
-        btnQueue.disabled       = false;
-        btnToggle.textContent   = response.data.buttonText;
-        stIndicator.textContent = response.message;
-    }
-});
+})
+    .then(res => res.json())
+    .catch(error => {})
+    .then((response) => {
+        if( response.success ) {
+            btnToggle.disabled      = false;
+            btnQueue.disabled       = false;
+            btnToggle.textContent   = response.data.buttonText;
+            stIndicator.textContent = response.message;
+        }
+    });
 
 btnToggle.addEventListener('click', (e) => {
 	let $this = e.currentTarget;
@@ -33,20 +34,21 @@ btnToggle.addEventListener('click', (e) => {
             'Content-Type'     : 'application/json',
             "X-Requested-With" : "XMLHttpRequest"
         }
-    }).then(res => res.json())
-    .catch(error => {
-    	$this.disabled = false;
-    	alert('An error occurred while processing the request!');
     })
-    .then((response) => {
-    	$this.disabled = false;
-        if( !response.success ) {
-        	alert(response.message);
-        	return;
-        }
-        $this.textContent       = response.data.buttonText;
-        stIndicator.textContent = response.message;
-    });
+        .then(res => res.json())
+        .catch(error => {
+            $this.disabled = false;
+            alert('An error occurred while processing the request!');
+        })
+        .then((response) => {
+            $this.disabled = false;
+            if( !response.success ) {
+                alert(response.message);
+                return;
+            }
+            $this.textContent       = response.data.buttonText;
+            stIndicator.textContent = response.message;
+        });
 });
 
 btnQueue.addEventListener('click', (e) => {
@@ -68,19 +70,20 @@ btnQueue.addEventListener('click', (e) => {
             'Content-Type'     : 'application/json',
             "X-Requested-With" : "XMLHttpRequest"
         }
-    }).then(res => res.json())
-    .catch(error => {
-        $this.disabled = false;
-        alert('An error occurred while processing the request!');
     })
-    .then((response) => {
-        $this.disabled = false;
-        if( !response.success ) {
-            alert(response.message);
-            return;
-        }
-        getData();
-    });
+        .then(res => res.json())
+        .catch(error => {
+            $this.disabled = false;
+            alert('An error occurred while processing the request!');
+        })
+        .then((response) => {
+            $this.disabled = false;
+            if( !response.success ) {
+                alert(response.message);
+                return;
+            }
+            getData();
+        });
 });
 
 
@@ -91,28 +94,30 @@ const getData = () => {
             'Content-Type'     : 'application/json',
             "X-Requested-With" : "XMLHttpRequest"
         }
-    }).then(res => res.json())
-    .catch(error => {})
-    .then((response) => {
-        tableData.innerHTML = '';
-        if( response.success ) {
-            response.data.forEach((row) => {
-                tableData.innerHTML += `
-                    <tr>
-                        <td>${row.id}</td>
-                        <td>${row.priority}</td>
-                        <td>${row.size}</td>
-                        <td>${row.type}</td>
-                        <td><button onclick="dequeue(${row.id}, this)">Remove</button></td>
-                    </tr>
-                `;
-            });
-        }
-    });
+    })
+        .then(res => res.json())
+        .catch(error => {})
+        .then((response) => {
+            tableData.innerHTML = '';
+            if( response.success ) {
+                response.data.forEach((row) => {
+                    tableData.innerHTML += `
+                        <tr>
+                            <td>${row.id}</td>
+                            <td>${row.priority}</td>
+                            <td>${row.size}</td>
+                            <td>${row.type}</td>
+                            <td><button onclick="deQueue(${row.id}, this)">Remove</button></td>
+                        </tr>
+                    `;
+                });
+            }
+        });
 };
+
 getData();
 
-function dequeue(id, btn){
+function deQueue(id, btn){
     if( btn.disabled ) {
         return ;
     }
@@ -124,17 +129,18 @@ function dequeue(id, btn){
             'Content-Type'     : 'application/json',
             "X-Requested-With" : "XMLHttpRequest"
         }
-    }).then(res => res.json())
-    .catch(error => {
-        btn.disabled = false;
-        alert('An error occurred while processing the request!');
     })
-    .then((response) => {
-        if( !response.success ) {
+        .then(res => res.json())
+        .catch(error => {
             btn.disabled = false;
-            alert(response.message);
-            return;
-        }
-        getData();
-    });
+            alert('An error occurred while processing the request!');
+        })
+        .then((response) => {
+            if( !response.success ) {
+                btn.disabled = false;
+                alert(response.message);
+                return;
+            }
+            getData();
+        });
 }

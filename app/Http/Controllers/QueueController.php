@@ -1,17 +1,21 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use \App\Models\Queue;
 use \App\Models\Aircraft;
 use \App\Utils\System;
 
-class QueueController extends Controller {
+class QueueController extends Controller
+{
 
-    public function __construct() {
-        //    
+    public function __construct()
+    {
+        //
     }
 
-    public function index(){
+    public function index()
+    {
         /*$resultSet = app('db')->select(
             "SELECT q.id, q.priority, a.type, a.size 
             FROM queues q 
@@ -20,21 +24,22 @@ class QueueController extends Controller {
         );*/
 
         $resultSet = Queue::select(['queues.id', 'queues.priority', 'acs.type', 'acs.size'])
-                    ->join('acs', 'acs.id', 'queues.ac_id')
-                    ->orderBy('queues.priority', 'DESC')
-                    ->orderBy('acs.size', 'DESC')
-                    ->orderBy('queues.created_at', 'ASC')
-                    ->get();
+            ->join('acs', 'acs.id', 'queues.ac_id')
+            ->orderBy('queues.priority', 'DESC')
+            ->orderBy('acs.size', 'DESC')
+            ->orderBy('queues.created_at', 'ASC')
+            ->get();
 
         return response()->json([
             "success" => true,
-            "data"    => $resultSet,
+            "data" => $resultSet,
             "message" => 'List has been retrieved!'
         ]);
     }
 
-    public function store(){
-        if( !System::isOn() ) {
+    public function store()
+    {
+        if (!System::isOn()) {
             return response()->json([
                 "success" => false,
                 "message" => "System has to boot up before queueing!"
@@ -44,14 +49,14 @@ class QueueController extends Controller {
         $size = strtolower(request()->get('size', ''));
         $type = strtolower(request()->get('type', ''));
 
-        if( !in_array($size, ['large', 'small']) ){
+        if (!in_array($size, ['large', 'small'])) {
             return response()->json([
                 "success" => false,
                 "message" => "Invalid value for size"
             ]);
         }
-        
-        if( !in_array($type, ['emergency', 'vip', 'passenger', 'cargo']) ){
+
+        if (!in_array($type, ['emergency', 'vip', 'passenger', 'cargo'])) {
             return response()->json([
                 "success" => false,
                 "message" => "Invalid value for type"
@@ -59,18 +64,18 @@ class QueueController extends Controller {
         }
         //app('db')->insert("INSERT INTO acs (size, type) VALUES(?, ?)", [$size, $type]);
         //$acId = app('db')->table('acs')->insertGetId(['size' => $size, 'type' => $type]);
-        //
+
         $aircraft = new Aircraft;
         $aircraft->size = $size;
         $aircraft->type = $type;
-        if( !$aircraft->save() ) {
+        if (!$aircraft->save()) {
             return response()->json([
                 "success" => false,
-                "message" => "An error ocurred while creating the aircraft!"
+                "message" => "An error occurred while creating the aircraft!"
             ]);
         }
-    
-        switch( $type ) {
+
+        switch ($type) {
             case 'emergency':
                 $priority = 5;
                 break;
@@ -86,37 +91,38 @@ class QueueController extends Controller {
 
         //priority 4 will be a wildcard, just in case
         //$queueId = app('db')->table('queues')->insertGetId(['ac_id' => $acId, 'priority' => $priority]);
-        $queue           = new Queue;
-        $queue->ac_id    = $aircraft->id;
+        $queue = new Queue;
+        $queue->ac_id = $aircraft->id;
         $queue->priority = $priority;
-        if( !$queue->save() ) {
+        if (!$queue->save()) {
             return response()->json([
                 "success" => false,
-                "message" => "An error ocurred while queueing the aircraft!"
+                "message" => "An error occurred while queueing the aircraft!"
             ]);
         }
 
         return response()->json([
             'success' => true,
-            'data'    => [],
+            'data' => [],
             "message" => 'AC has entered the queue!'
         ]);
     }
 
-    public function destroy($id){
-        if( !System::isOn() ) {
+    public function destroy($id)
+    {
+        if (!System::isOn()) {
             return response()->json([
                 "success" => false,
-                "message" => "System has to boot up before dequeueing!"
+                "message" => "System has to boot up before removing an aircraft from queue!"
             ]);
         }
-        $data  = [ 'message'=>'Aircraft has been dequeed successfully!' ];
+        $data = ['message' => 'Aircraft has been removed from queue successfully!'];
         $queue = Queue::find($id);
-        if( empty($queue) ) {
+        if (empty($queue)) {
             $data['success'] = false;
-            $data['message'] ='Aircraft not found!';
+            $data['message'] = 'Aircraft not found!';
         } else {
-            if( $queue->delete() ) {
+            if ($queue->delete()) {
                 $data['success'] = true;
                 $queue->aircraft->delete();
             }

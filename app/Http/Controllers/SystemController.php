@@ -1,44 +1,48 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use \App\Utils\System;
 
-class SystemController extends Controller {
+class SystemController extends Controller
+{
 
-    public function getCurrentStatus() {
-        if( System::isOn() ) {
-            $buttonText  = 'Stop';
-            $message     = "running";
+    public function getCurrentStatus()
+    {
+        if (System::isOn()) {
+            $buttonText = 'Stop';
+            $message = "running";
         } else {
-            $buttonText  = 'Start';
-            $message     = "stopped";
+            $buttonText = 'Start';
+            $message = "stopped";
         }
 
         return response()->json([
             "success" => true,
             "message" => $message,
-            "data"    => [
+            "data" => [
                 'buttonText' => $buttonText
             ]
         ]);
     }
 
-    public function toogleMachine() {
-        if( !System::isOn() ) {
+    public function toogleMachine()
+    {
+        if (!System::isOn()) {
             System::bootUp();
-            $buttonText  = 'Stop';
-            $message     = "running";
+            $buttonText = 'Stop';
+            $message = "running";
         } else {
             System::shutDown();
-            $buttonText  = 'Start';
-            $message     = "stoped";
+            $buttonText = 'Start';
+            $message = "stoped";
         }
 
         return response()->json([
             "success" => true,
             "message" => $message,
-            "data"    => [
-                "buttonText" => $buttonText 
+            "data" => [
+                "buttonText" => $buttonText
             ],
         ]);
 

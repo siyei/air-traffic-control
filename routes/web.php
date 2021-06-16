@@ -12,9 +12,6 @@
 | and give it the Closure to call when that URI is requested.
 |
 */
-//REST best practices
-//Code style ---- standard PSR-2
-//Deploy ----
 
 $router->get('/', function () use ($router) {
     return view('home');
@@ -35,5 +32,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
         $router->post('/', 'QueueController@store');
 
         $router->delete('{id}', 'QueueController@destroy');
+        
     });
 });
