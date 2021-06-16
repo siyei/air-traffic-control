@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use \App\Models\Queue;
 use \App\Models\Aircraft;
+use \App\Utils\System;
 
 class QueueController extends Controller {
 
@@ -33,7 +34,7 @@ class QueueController extends Controller {
     }
 
     public function store(){
-        if( count(app('db')->select("SELECT 1 FROM system")) == 0 ) {
+        if( !System::isOn() ) {
             return response()->json([
                 "success" => false,
                 "message" => "System has to boot up before queueing!"
@@ -103,7 +104,7 @@ class QueueController extends Controller {
     }
 
     public function destroy($id){
-        if( count(app('db')->select("SELECT 1 FROM system")) == 0 ) {
+        if( !System::isOn() ) {
             return response()->json([
                 "success" => false,
                 "message" => "System has to boot up before dequeueing!"

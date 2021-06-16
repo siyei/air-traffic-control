@@ -3,7 +3,7 @@ const btnToggle = document.querySelector('.btn-boot'),
     stIndicator = document.querySelector('.current-status'),
     tableData   = document.querySelector('table.data tbody');
 
-fetch('./api/status', {
+fetch('./api/system/status', {
     method: 'GET',
     headers:{
         'Content-Type'     : 'application/json',
@@ -27,7 +27,7 @@ btnToggle.addEventListener('click', (e) => {
 	}
 	$this.disabled = true;
 
-	fetch('./api/boot', {
+	fetch('./api/system/boot', {
         method: 'POST',
         headers:{
             'Content-Type'     : 'application/json',

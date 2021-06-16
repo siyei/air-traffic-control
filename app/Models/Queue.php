@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 class Queue extends Model
 {
     protected $table = 'queues';
+    public $timestamps = true;
     /**
      * The attributes that are mass assignable.
      *
