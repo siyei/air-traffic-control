@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
+use \App\Models\Queue;
+use \App\Models\Aircraft;
 
 class QueueController extends Controller {
 
@@ -9,16 +11,23 @@ class QueueController extends Controller {
     }
 
     public function index(){
-        $resultSet = app('db')->select(
+        /*$resultSet = app('db')->select(
             "SELECT q.id, q.priority, a.type, a.size 
-            FROM queue q 
+            FROM queues q 
                 JOIN acs a ON a.id=q.ac_id 
             ORDER BY q.priority DESC, a.size DESC, q.created_at ASC"
-        );
+        );*/
+
+        $resultSet = Queue::select(['queues.id', 'queues.priority', 'acs.type', 'acs.size'])
+                    ->join('acs', 'acs.id', 'queues.ac_id')
+                    ->orderBy('queues.priority', 'DESC')
+                    ->orderBy('acs.size', 'DESC')
+                    ->orderBy('queues.created_at', 'ASC')
+                    ->get();
 
         return response()->json([
-            'success' => true,
-            'data'    => $resultSet,
+            "success" => true,
+            "data"    => $resultSet,
             "message" => 'List has been retrieved!'
         ]);
     }
@@ -48,7 +57,17 @@ class QueueController extends Controller {
             ]);
         }
         //app('db')->insert("INSERT INTO acs (size, type) VALUES(?, ?)", [$size, $type]);
-        $acId = app('db')->table('acs')->insertGetId(['size' => $size, 'type' => $type]);
+        //$acId = app('db')->table('acs')->insertGetId(['size' => $size, 'type' => $type]);
+        //
+        $aircraft = new Aircraft;
+        $aircraft->size = $size;
+        $aircraft->type = $type;
+        if( !$aircraft->save() ) {
+            return response()->json([
+                "success" => false,
+                "message" => "An error ocurred while creating the aircraft!"
+            ]);
+        }
     
         switch( $type ) {
             case 'emergency':
@@ -65,13 +84,20 @@ class QueueController extends Controller {
         }
 
         //priority 4 will be a wildcard, just in case
-        $queueId = app('db')->table('queue')->insertGetId(['ac_id' => $acId, 'priority' => $priority]);
+        //$queueId = app('db')->table('queues')->insertGetId(['ac_id' => $acId, 'priority' => $priority]);
+        $queue           = new Queue;
+        $queue->ac_id    = $aircraft->id;
+        $queue->priority = $priority;
+        if( !$queue->save() ) {
+            return response()->json([
+                "success" => false,
+                "message" => "An error ocurred while queueing the aircraft!"
+            ]);
+        }
 
         return response()->json([
             'success' => true,
-            'data'    => [
-                'queueId' => $queueId
-            ],
+            'data'    => [],
             "message" => 'AC has entered the queue!'
         ]);
     }
@@ -83,13 +109,16 @@ class QueueController extends Controller {
                 "message" => "System has to boot up before dequeueing!"
             ]);
         }
-        $data = [ 'message'=>'Aircraft has been dequeed successfully!' ];
-        $data['success'] = app('db')->table('queue')->where('id', $id)->delete();
-        if( $data['success'] ) {
-            $data['success'] = true;
-        }else {
+        $data  = [ 'message'=>'Aircraft has been dequeed successfully!' ];
+        $queue = Queue::find($id);
+        if( empty($queue) ) {
             $data['success'] = false;
-            $data['message'] ='Queue not found!';
+            $data['message'] ='Aircraft not found!';
+        } else {
+            if( $queue->delete() ) {
+                $data['success'] = true;
+                $queue->aircraft->delete();
+            }
         }
         return response()->json($data);
     }
